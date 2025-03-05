@@ -1,0 +1,14 @@
+{
+  "name": "worldmap-generator",
+  "version": "1.0.0",
+  "main": "worldmap-generator.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "sharp": "^0.33.5"
+  }
+}
