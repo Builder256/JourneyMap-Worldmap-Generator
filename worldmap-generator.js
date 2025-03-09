@@ -28,6 +28,8 @@ setInterval(() => {
 }, 1000)
 
 filterValidImages(allImages).then(validImages => {
+    console.log('Filtering valid images conpleted');
+    console.log('Valid images are: ' + validImages)
     const gridSize = getGridSize(validImages);
     sharp.cache(false);
     sharp.concurrency(1);
@@ -36,12 +38,14 @@ filterValidImages(allImages).then(validImages => {
 });
 
 async function filterValidImages(images) {
+    console.log('Filtering Valid Images...')
     let validImages = [];
 
     for (const image of images) {
-        const isError = await isErrorImage(image);
+        const isError = await isErrorImage(path.join(INPUT_DIR, image), 16, 1);
         if (!isError) {
             validImages.push(image); // エラー画像でなければ追加
+            console.log('A valid image added!')
         }
     }
     console.log(validImages)
@@ -49,6 +53,7 @@ async function filterValidImages(images) {
 }
 
 async function isErrorImage(image, headerHeight, transparencyThreshold) {
+    console.log(`Checking image: ${image}`)
 
     // 画像のピクセルデータと情報を取得
     // 返値の形式は
@@ -91,6 +96,7 @@ async function isErrorImage(image, headerHeight, transparencyThreshold) {
 }
 
 function getGridSize(images) {
+    console.log('Getting grid size...')
     let minX = Infinity,
         minY = Infinity,
         maxX = -Infinity,
@@ -128,18 +134,21 @@ async function createWorldMap(images, gridSize) {
     console.log(`Creating world map: ${output}`);
 
     const tiles = images.map(image => {
-        const [x, y] = parseFileName(image);
+        const { x, y } = parseFileName(image);
         const top = y - gridSize.minY;
         const left = x - gridSize.minX;
 
         return {
-            input: `${OUTPUT_DIR}${INPUT_DIR}${image}`,
+            input: path.join(INPUT_DIR, image),
             top: top * IMAGE_SIZE,
             left: left * IMAGE_SIZE
         };
     });
 
+    console.log('Generating tile data is completed');
+
     try {
+        console.log('Generating worldmap...')
         await sharp({
             create: {
                 width: gridSize.sizeX * IMAGE_SIZE,
@@ -150,7 +159,7 @@ async function createWorldMap(images, gridSize) {
             limitInputPixels: false
         })
             .composite(tiles)
-            .toFile(output);
+            .toFile(path.join(OUTPUT_DIR, output));
 
         console.log(`Created ${output}`);
     } catch (err) {
@@ -167,6 +176,7 @@ async function createWorldMap(images, gridSize) {
  * @returns {object} ext: 拡張子, name: 拡張子を含まないファイル名, x: X座標, y: Y座標
  */
 function parseFileName(fileName) {
+    console.log(`Parsing file name: ${fileName}`);
     const parsed = path.parse(fileName);
 
     const ext = parsed.ext;
